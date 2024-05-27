@@ -64,6 +64,19 @@ def main():
         print("Usage: python main.py <URL>")
         sys.exit(1)
 
+    page_content = fetch_reader_page(args.url)
+
+    if not page_content:
+        print(f"Failed to fetch web page: {args.url}")
+
+    prompt = f"Generate an OpenAPI specification for the following webpage: {args.url}.\
+        The webpage content is as follows: {page_content}"
+
+    oas_file = ai_generate(prompt)
+
+    with open("oas.yaml", "w") as f:
+        f.write(oas_file)
+
 
 if __name__ == "__main__":
     main()
