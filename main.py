@@ -33,8 +33,10 @@ def fetch_reader_page(url: str) -> str:
 
 def ai_generate(prompt: str) -> str:
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        print("Running Prompt: ", prompt)
+        model = genai.GenerativeModel("gemini-1.5-pro")
         response = model.generate_content(prompt)
+        print("response: ", response.text)
         return response.text
     except Exception as e:
         traceback.print_exc()
@@ -53,7 +55,13 @@ def validate_args(args):
         return False
 
 
+def count_tokens(text: str) -> int:
+    tokens = text.split()
+    return len(tokens)
+
+
 def main():
+    print("Welcome to OAS Generator!")
     parser = argparse.ArgumentParser(description="Fetch a webpage.")
     parser.add_argument("url", help="The URL of the webpage to fetch.")
     args = parser.parse_args()
@@ -64,15 +72,29 @@ def main():
         print("Usage: python main.py <URL>")
         sys.exit(1)
 
+    print("Fetching: ", args.url)
+
     page_content = fetch_reader_page(args.url)
+    tokens = count_tokens(page_content)
+
+    print(f"Processing ${tokens} tokens from the webpage.")
 
     if not page_content:
         print(f"Failed to fetch web page: {args.url}")
 
-    prompt = f"Generate an OpenAPI specification for the following webpage: {args.url}.\
-        The webpage content is as follows: {page_content}"
+    prompt = f"Generate an OpenAPI specification for the following webpage. \
+        Don't truncate the output, return the full YAML specification for the page. \
+        The webpage content is as follows: ```{page_content}```"
 
     oas_file = ai_generate(prompt)
+
+    if not oas_file:
+        print("Failed to generate OAS file. ")
+        sys.exit(1)
+
+    print(
+        f"Writing OpenAPI specification to oas.yaml: tokens = ${count_tokens(oas_file)}"
+    )
 
     with open("oas.yaml", "w") as f:
         f.write(oas_file)
