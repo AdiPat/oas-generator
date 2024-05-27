@@ -1,4 +1,6 @@
+import sys
 import requests
+import argparse
 import traceback
 import os
 from dotenv import load_dotenv
@@ -37,3 +39,31 @@ def ai_generate(prompt: str) -> str:
     except Exception as e:
         traceback.print_exc()
         return None
+
+
+def validate_args(args):
+    if args.url:
+        if args.url.startswith("http"):
+            return True
+        else:
+            print("Invalid URL. Please provide a valid URL.")
+            return False
+    else:
+        print("Please provide a URL or a prompt.")
+        return False
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Fetch a webpage.")
+    parser.add_argument("url", help="The URL of the webpage to fetch.")
+    args = parser.parse_args()
+    is_args_valid = validate_args(args=args)
+
+    if not is_args_valid:
+        print("Invalid arguments.")
+        print("Usage: python main.py <URL>")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
